@@ -1,0 +1,29 @@
+{
+  "name": "es-schema-migration",
+  "version": "1.0.0",
+  "description": "Utility for versioned ES mapping migrations",
+  "main": "es-schama-migration.js",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "bluebird-co": "^2.2.0",
+    "chalk": "^1.1.3",
+    "co-fs": "^1.2.0",
+    "colors": "^1.1.2",
+    "elasticsearch": "^13.0.0-rc2",
+    "yargs": "^7.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/joona/es-schema-migration.git"
+  },
+  "author": "Joona Kulmala <jmkulmala@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joona/es-schema-migration/issues"
+  },
+  "homepage": "https://github.com/joona/es-schema-migration#readme"
+}
