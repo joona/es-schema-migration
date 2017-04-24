@@ -116,6 +116,14 @@ var options = require('yargs')
       .option('add-alias', { description: 'Add alias after reindexing' })
       .option('alias', { description: 'Alias to use, defaults to auto generated name.' });
   })
+  .command('alias', 'Point index alias to a index version.', y => {
+    return y
+      .usage('Usage: $0 alias --index <indexName> --version <indexVersion> --alias <aliasName> [options]')
+      .option('alias', {
+        description: 'Alias name',
+      })
+      .demand(['prefix', 'index', 'version']);
+  })
   .option('prefix').demand('prefix')
   .option('index').demand('index')
   .option('version').demand('version')
@@ -202,9 +210,22 @@ if(!module.parent) {
           if(options['add-alias']) {
             console.log()
             console.log('Adding alias'.bold, indexAliasName.cyan, '=>'.bold, indexName.cyan);
-            yield api.putAlias(indexAliasName, indexName);
+            console.log(colors.gray(JSON.stringify(yield api.putAlias(aliasName, indexName))));
             console.log('✔️ done'.green);
           }
+          break;
+
+        case 'alias':
+          console.log();
+
+          let aliasName = indexAliasName;
+          if(options.alias) {
+            aliasName = options.alias;
+          }
+
+          console.log('Adding alias'.bold, aliasName.cyan, '=>'.bold, indexName.cyan);
+          console.log(colors.gray(JSON.stringify(yield api.putAlias(aliasName, indexName))));
+          console.log('✔️ done'.green);
           break;
 
         default:
