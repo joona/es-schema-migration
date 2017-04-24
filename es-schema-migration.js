@@ -7,6 +7,14 @@ const api = module.exports = {};
 
 let client;
 
+var grayput = function(input) {
+  if(typeof input === "object") {
+    input = JSON.stringify(input);
+  }
+
+  return console.log(colors.gray(input));
+}
+
 api.elasticsearch = function(options) {
   client = new elasticsearch.Client(options);
   return client;
@@ -59,7 +67,7 @@ api.createIndexWithMapping = function*(index, body, options) {
     if(options.deleteIndex) {
       console.log('Going to delete index'.bold, index.cyan);
       var deleteResponse = yield api.deleteIndex(index);
-      console.log(colors.gray(JSON.stringify(deleteResponse)));
+      grayput(deleteResponse);
       console.log('✔️ done'.green);
     } else {
       console.log();
@@ -71,7 +79,7 @@ api.createIndexWithMapping = function*(index, body, options) {
   console.log()
   console.log('Creating index'.bold, index.cyan, 'with mapping...'.bold);
   var response = yield api.createIndex(index, body);
-  console.log(colors.gray(JSON.stringify(response)));
+  grayput(response);
   console.log('✔️ done'.green);
 
   return response;
@@ -84,6 +92,12 @@ api.putAlias = function(aliasName, indexName) {
   };
 
   return client.indices.putAlias(params);
+}
+
+api.getAliases = function(aliasName) {
+  return client.indices.getAlias({
+    name: aliasName
+  });
 }
 
 api.reindexFrom = function(fromIndex, toIndex) {
@@ -107,6 +121,54 @@ api.checkConnection = function() {
   return client.cluster.health({ timeout: '2s' });
 }
 
+
+api.updateAliases = function(add, remove) {
+  let actions = [];
+  if(remove && Array.isArray(remove)) {
+    remove.forEach(a => {
+      actions.push({ remove: a });
+    });
+  }
+
+  add.forEach(a => {
+    actions.push({ add: a });
+  });
+
+  return client.indices.updateAliases({
+    body: {
+      actions
+    }
+  });
+}
+
+var handleAliasUpdate = function*(indexName, aliasName) {
+  console.log();
+  console.log('Getting aliases'.bold, aliasName.cyan);
+  var aliases = yield api.getAliases(aliasName);
+  grayput(aliases);
+  console.log('✔️ done'.green);
+  console.log();
+
+  let add = [];
+  let remove = [];
+  var indices = Object.keys(aliases);
+  for(var i = 0; i < indices.length; i++) {
+    var index = indices[i];
+    var alias = aliases[index];
+    if(alias.aliases[aliasName]) {
+      console.log(index, 'points to', aliasName.cyan, ', to be removed');
+      remove.push({ index, alias: aliasName });
+    }
+  }
+
+  console.log(index.cyan, 'to be added as an alias for', aliasName.cyan);
+  add.push({ index, alias: aliasName});
+
+  console.log();
+  console.log('Updating alias'.bold, aliasName.cyan, '=>'.bold, indexName.cyan);
+  grayput(yield api.updateAliases(add, remove));
+  console.log('✔️ done'.green);
+}
 
 var options = require('yargs')
   .usage('Usage: $0 <command> [options]')
@@ -203,29 +265,27 @@ if(!module.parent) {
 
             console.log();
             console.log('Reindexing from'.bold.white, fromIndex.cyan, '=>'.bold, indexName.cyan, '...'.bold);
-            console.log(colors.gray(JSON.stringify(yield api.reindexFrom(fromIndex, indexName))));
+            grayput(yield api.reindexFrom(fromIndex, indexName));
             console.log('✔️ done'.green);
           }
 
           if(options['add-alias']) {
-            console.log()
-            console.log('Adding alias'.bold, indexAliasName.cyan, '=>'.bold, indexName.cyan);
-            console.log(colors.gray(JSON.stringify(yield api.putAlias(aliasName, indexName))));
-            console.log('✔️ done'.green);
+            let aliasName = indexAliasName;
+            
+            if(options.alias) {
+              aliasName = options.alias;
+            }
+
+            yield handleAliasUpdate(indexName, aliasName);
           }
           break;
 
         case 'alias':
-          console.log();
-
           let aliasName = indexAliasName;
           if(options.alias) {
             aliasName = options.alias;
           }
-
-          console.log('Adding alias'.bold, aliasName.cyan, '=>'.bold, indexName.cyan);
-          console.log(colors.gray(JSON.stringify(yield api.putAlias(aliasName, indexName))));
-          console.log('✔️ done'.green);
+          yield handleAliasUpdate(indexName, aliasName);
           break;
 
         default:
