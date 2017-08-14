@@ -144,25 +144,36 @@ api.updateAliases = function(add, remove) {
 var handleAliasUpdate = function*(indexName, aliasName) {
   console.log();
   console.log('Getting aliases'.bold, aliasName.cyan);
-  var aliases = yield api.getAliases(aliasName);
-  grayput(aliases);
-  console.log('✔️ done'.green);
-  console.log();
-
+  var aliases = [];
   let add = [];
   let remove = [];
-  var indices = Object.keys(aliases);
-  for(var i = 0; i < indices.length; i++) {
-    var index = indices[i];
-    var alias = aliases[index];
-    if(alias.aliases[aliasName]) {
-      console.log(index, 'points to', aliasName.cyan, ', to be removed');
-      remove.push({ index, alias: aliasName });
+  
+  try {
+    aliases = yield api.getAliases(aliasName);
+    grayput(aliases);
+    console.log('✔️ done'.green);
+    console.log();
+
+    var indices = Object.keys(aliases);
+    for(var i = 0; i < indices.length; i++) {
+      var index = indices[i];
+      var alias = aliases[index];
+      if(alias.aliases[aliasName]) {
+        console.log(index, 'points to', aliasName.cyan, ', to be removed');
+        remove.push({ index, alias: aliasName });
+      }
+    }
+  } catch(err) {
+    if(err.status == 404) {
+      console.log('💣  Alias Not Found'.yellow);
+      console.log();
+    } else {
+      throw err;
     }
   }
 
-  console.log(index.cyan, 'to be added as an alias for', aliasName.cyan);
-  add.push({ index, alias: aliasName});
+  console.log(indexName.cyan, 'to be added as an alias for', aliasName.cyan);
+  add.push({ index: indexName, alias: aliasName});
 
   console.log();
   console.log('Updating alias'.bold, aliasName.cyan, '=>'.bold, indexName.cyan);
