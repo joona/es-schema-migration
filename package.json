@@ -1,6 +1,6 @@
 {
   "name": "es-schema-migration",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility for versioned ES mapping migrations",
   "main": "es-schama-migration.js",
   "dependencies": {
