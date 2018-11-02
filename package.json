@@ -4,13 +4,16 @@
   "description": "Utility for versioned ES mapping migrations",
   "main": "es-schama-migration.js",
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.5.2",
     "bluebird-co": "^2.2.0",
     "chalk": "^1.1.3",
     "co-fs": "^1.2.0",
     "colors": "^1.1.2",
-    "elasticsearch": "^13.0.0-rc2",
+    "elasticsearch": "^15.2.0",
     "yargs": "^7.1.0"
+  },
+  "bin": {
+    "es-schema-migration": "bin/es-schema-migration.js"
   },
   "devDependencies": {},
   "scripts": {

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const co = require('bluebird-co').co;
 const elasticsearch = require('elasticsearch');
 const fs = require('co-fs');

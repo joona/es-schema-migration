@@ -53,3 +53,8 @@ Create or recreate index `foo-bar_v2` with versioned mapping, reindex data from 
 ```
 node es-schema-migration.js schema --prefix foo --index bar --version 2 --add-alias --delete-existing --from-previous
 ```
+
+
+### Nice, but I need to run migrations on AWS ElasticSearch Service
+
+Sure, no problem. Check out [aws-es-proxy](https://github.com/joona/aws-es-proxy), spin it up locally, and point `es-schema-migration` to the proxy.
